@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Escolha de Tutoria</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; }
+    label { display:block; margin-top: 12px; font-weight: 600; }
+    select, textarea, button { width:100%; padding:10px; margin-top:6px; border-radius:10px; border:1px solid #ccc; }
+    textarea { min-height: 110px; resize: vertical; }
+    button { cursor:pointer; font-weight:700; }
+    .row { display:grid; grid-template-columns: 1fr; gap: 10px; }
+    .hint { font-size: 12px; color:#555; margin-top: 6px; }
+    .msg { margin-top: 12px; padding: 10px; border-radius: 10px; }
+    .ok { background:#eaffea; border:1px solid #b5e3b5; }
+    .err { background:#ffecec; border:1px solid #f0b3b3; }
+  </style>
+</head>
+<body>
+  <h2>Escolha de Tutoria</h2>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="turma">Turma</label>
+        <select id="turma">
+          <option value="">Selecione...</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="aluno">Aluno</label>
+        <select id="aluno" disabled>
+          <option value="">Selecione a turma primeiro...</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="op1">1ª opção de tutor</label>
+        <select id="op1" disabled></select>
+      </div>
+
+      <div>
+        <label for="just1">Justificativa da 1ª escolha</label>
+        <textarea id="just1" placeholder="Explique por que escolheu esse tutor (mínimo 20 caracteres)..." disabled></textarea>
+        <div class="hint">Mínimo: 20 caracteres.</div>
+      </div>
+
+      <div>
+        <label for="op2">2ª opção</label>
+        <select id="op2" disabled></select>
+      </div>
+
+      <div>
+        <label for="op3">3ª opção</label>
+        <select id="op3" disabled></select>
+      </div>
+
+      <div>
+        <label for="op4">4ª opção</label>
+        <select id="op4" disabled></select>
+      </div>
+
+      <div>
+        <label for="op5">5ª opção</label>
+        <select id="op5" disabled></select>
+      </div>
+
+      <button id="enviar" disabled>Enviar</button>
+      <div id="msg"></div>
+    </div>
+  </div>
+
+<script>
+  // Cole aqui a URL do seu Web App do Apps Script
+  const API_BASE = "AKfycbzKV_zRsE7o2gDmesFQFbTpLLeEbhDW8qXOjvfevFExqqtvFAO-4avIbWPkzvn1Cjqf8A";
+
+  const elTurma = document.getElementById("turma");
+  const elAluno = document.getElementById("aluno");
+  const elOp1 = document.getElementById("op1");
+  const elOp2 = document.getElementById("op2");
+  const elOp3 = document.getElementById("op3");
+  const elOp4 = document.getElementById("op4");
+  const elOp5 = document.getElementById("op5");
+  const elJust1 = document.getElementById("just1");
+  const elEnviar = document.getElementById("enviar");
+  const elMsg = document.getElementById("msg");
+
+  function setMsg(text, ok=true) {
+    elMsg.className = "msg " + (ok ? "ok" : "err");
+    elMsg.textContent = text;
+  }
+
+  function clearMsg() {
+    elMsg.className = "";
+    elMsg.textContent = "";
+  }
+
+  async function fetchJSON(url, opts) {
+    const res = await fetch(url, opts);
+    return await res.json();
+  }
+
+  function setOptions(selectEl, list, {placeholder="Selecione..."}={}) {
+    selectEl.innerHTML = "";
+    const ph = document.createElement("option");
+    ph.value = "";
+    ph.textContent = placeholder;
+    selectEl.appendChild(ph);
+
+    for (const item of list) {
+      const opt = document.createElement("option");
+      opt.value = item.value;
+      opt.textContent = item.label;
+      selectEl.appendChild(opt);
+    }
+  }
+
+  function enableTutorFields(enabled) {
+    for (const el of [elOp1, elOp2, elOp3, elOp4, elOp5, elJust1]) {
+      el.disabled = !enabled;
+    }
+    elEnviar.disabled = !enabled;
+  }
+
+  function getTutorChoices() {
+    const selected = [elOp1.value, elOp2.value, elOp3.value, elOp4.value, elOp5.value].filter(Boolean);
+    return selected;
+  }
+
+  function refreshTutorDropdowns(tutores) {
+    // Remove opções já selecionadas em cada dropdown (sem repetir tutor)
+    const selected = getTutorChoices();
+
+    function buildList(exclude) {
+      return tutores
+        .filter(t => !exclude.includes(t))
+        .map(t => ({ value: t, label: t }));
+    }
+
+    // Para cada select, exclui as escolhas dos outros
+    const picks = {
+      op1: elOp1.value,
+      op2: elOp2.value,
+      op3: elOp3.value,
+      op4: elOp4.value,
+      op5: elOp5.value
+    };
+
+    const all = tutores.slice();
+
+    const excludeFor = (keepKey) => {
+      return Object.entries(picks)
+        .filter(([k, v]) => k !== keepKey && v)
+        .map(([k, v]) => v);
+    };
+
+    // Re-render mantendo seleção atual se ainda válida
+    const reRender = (el, keepKey) => {
+      const old = el.value;
+      const list = buildList(excludeFor(keepKey));
+      setOptions(el, list, { placeholder: "Selecione..." });
+      if (old && list.some(x => x.value === old)) el.value = old;
+    };
+
+    reRender(elOp1, "op1");
+    reRender(elOp2, "op2");
+    reRender(elOp3, "op3");
+    reRender(elOp4, "op4");
+    reRender(elOp5, "op5");
+  }
+
+  let tutoresCache = [];
+
+  async function init() {
+    clearMsg();
+    try {
+      const turmas = await fetchJSON(`${API_BASE}?action=turmas`);
+      setOptions(elTurma, turmas.map(t => ({ value: t.TurmaID, label: t.TurmaNome })));
+
+      tutoresCache = await fetchJSON(`${API_BASE}?action=tutores`);
+      // Inicializa selects de tutores
+      setOptions(elOp1, tutoresCache.map(t => ({value:t, label:t})));
+      setOptions(elOp2, tutoresCache.map(t => ({value:t, label:t})));
+      setOptions(elOp3, tutoresCache.map(t => ({value:t, label:t})));
+      setOptions(elOp4, tutoresCache.map(t => ({value:t, label:t})));
+      setOptions(elOp5, tutoresCache.map(t => ({value:t, label:t})));
+
+    } catch (e) {
+      setMsg("Falha ao carregar dados. Verifique a URL da API e a publicação do Apps Script.", false);
+    }
+  }
+
+  elTurma.addEventListener("change", async () => {
+    clearMsg();
+    const turmaId = elTurma.value;
+    elAluno.disabled = true;
+    elAluno.innerHTML = `<option value="">Carregando alunos...</option>`;
+    enableTutorFields(false);
+
+    if (!turmaId) {
+      elAluno.innerHTML = `<option value="">Selecione a turma primeiro...</option>`;
+      return;
+    }
+
+    const alunos = await fetchJSON(`${API_BASE}?action=alunos&turmaId=${encodeURIComponent(turmaId)}`);
+    setOptions(elAluno, alunos.map(a => ({ value: a.AlunoID, label: a.Nome })));
+    elAluno.disabled = false;
+  });
+
+  elAluno.addEventListener("change", () => {
+    clearMsg();
+    const ok = !!elAluno.value;
+    enableTutorFields(ok);
+  });
+
+  for (const s of [elOp1, elOp2, elOp3, elOp4, elOp5]) {
+    s.addEventListener("change", () => {
+      refreshTutorDropdowns(tutoresCache);
+      // Só libera justificativa quando tiver op1
+      elJust1.disabled = !elOp1.value;
+    });
+  }
+
+  elEnviar.addEventListener("click", async () => {
+    clearMsg();
+
+    const turmaId = elTurma.value;
+    const turmaNome = elTurma.options[elTurma.selectedIndex]?.textContent || "";
+    const alunoId = elAluno.value;
+    const alunoNome = elAluno.options[elAluno.selectedIndex]?.textContent || "";
+
+    const payload = {
+      turmaId,
+      turmaNome,
+      alunoId,
+      alunoNome,
+      opcao1: elOp1.value,
+      opcao2: elOp2.value,
+      opcao3: elOp3.value,
+      opcao4: elOp4.value,
+      opcao5: elOp5.value,
+      justificativa1: elJust1.value.trim()
+    };
+
+    if (!payload.opcao1) return setMsg("Selecione a 1ª opção de tutor.", false);
+    if (!payload.justificativa1 || payload.justificativa1.length < 20) return setMsg("Justificativa da 1ª escolha deve ter pelo menos 20 caracteres.", false);
+
+    try {
+      const res = await fetchJSON(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        return setMsg(res.error || "Erro ao enviar.", false);
+      }
+
+      setMsg(res.message || "Enviado!");
+      // trava tudo após envio
+      elEnviar.disabled = true;
+      enableTutorFields(false);
+      elTurma.disabled = true;
+      elAluno.disabled = true;
+
+    } catch (e) {
+      setMsg("Falha ao enviar. Verifique internet e se o Apps Script está publicado como 'Anyone'.", false);
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
