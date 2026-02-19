@@ -4,78 +4,411 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Escolha de Tutoria</title>
+
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: Arial, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; }
-    label { display:block; margin-top: 12px; font-weight: 600; }
-    select, textarea, button { width:100%; padding:10px; margin-top:6px; border-radius:10px; border:1px solid #ccc; }
-    textarea { min-height: 110px; resize: vertical; }
-    button { cursor:pointer; font-weight:700; }
-    .row { display:grid; grid-template-columns: 1fr; gap: 10px; }
-    .hint { font-size: 12px; color:#555; margin-top: 6px; }
-    .msg { margin-top: 12px; padding: 10px; border-radius: 10px; }
-    .ok { background:#eaffea; border:1px solid #b5e3b5; }
-    .err { background:#ffecec; border:1px solid #f0b3b3; }
+    :root{
+      /* Light theme */
+      --bg1:#f6f8fc;
+      --bg2:#eef2ff;
+      --card:#ffffff;
+      --stroke:#e6eaf2;
+      --text:#101828;
+      --muted:#475467;
+      --muted2:#667085;
+
+      --okbg:#ecfdf3;
+      --okbd:#a6f4c5;
+      --oktx:#027a48;
+
+      --errbg:#fffbfa;
+      --errbd:#fecdca;
+      --errtx:#b42318;
+
+      --focus:#84a8ff;
+      --ring: rgba(74, 114, 255, .18);
+
+      --btn1:#2f6bff;
+      --btn2:#1f52d8;
+      --btnShadow: 0 10px 24px rgba(47,107,255,.20);
+
+      --radius: 18px;
+      --shadow: 0 18px 60px rgba(16,24,40,.10);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 600px at 15% 10%, rgba(47,107,255,.12), transparent 55%),
+        radial-gradient(900px 500px at 85% 30%, rgba(39, 174, 96, .10), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 28px 14px;
+    }
+
+    .wrap{
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+    }
+    @media (max-width: 900px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .hero{
+      padding: 22px 22px 0 22px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .logo{
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, #fff, #f6f8ff);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .logo img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .title h1{
+      font-size: 22px;
+      margin:0;
+      line-height:1.1;
+      letter-spacing:-0.02em;
+    }
+    .title p{
+      margin:6px 0 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.35;
+    }
+
+    .steps{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin: 14px 0 18px 0;
+      padding: 0 22px 18px 22px;
+    }
+
+    .chip{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: #fbfcff;
+      color: var(--muted);
+      font-size: 12px;
+      user-select:none;
+    }
+
+    .chip b{
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(47,107,255,.12);
+      color: var(--text);
+      border: 1px solid rgba(47,107,255,.18);
+      font-size: 12px;
+    }
+
+    .form{
+      padding: 18px 22px 22px 22px;
+      border-top: 1px solid var(--stroke);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 650px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    label{
+      display:block;
+      font-weight: 800;
+      font-size: 12px;
+      margin: 2px 0 8px 2px;
+      color: var(--text);
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    select, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: #ffffff;
+      color: var(--text);
+      outline:none;
+      transition: .15s ease;
+    }
+
+    select:focus, textarea:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    select:disabled, textarea:disabled{
+      background: #f5f7fb;
+      color: var(--muted2);
+      cursor:not-allowed;
+    }
+
+    textarea{
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .full{ grid-column: 1 / -1; }
+
+    .hint{
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted2);
+      line-height:1.35;
+    }
+
+    .actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      margin-top: 14px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 800;
+      letter-spacing: .01em;
+      color: white;
+      background: linear-gradient(180deg, var(--btn1), var(--btn2));
+      box-shadow: var(--btnShadow);
+      transition: transform .08s ease, filter .15s ease, opacity .15s ease;
+    }
+    button:hover{ filter: brightness(1.02); }
+    button:active{ transform: translateY(1px); }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      filter: grayscale(.15);
+      box-shadow:none;
+    }
+
+    .msg{
+      margin-top: 14px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: #fbfcff;
+      color: var(--muted);
+      display:none;
+      line-height:1.35;
+    }
+    .msg.ok{
+      display:block;
+      background: var(--okbg);
+      border-color: var(--okbd);
+      color: var(--oktx);
+    }
+    .msg.err{
+      display:block;
+      background: var(--errbg);
+      border-color: var(--errbd);
+      color: var(--errtx);
+    }
+
+    .side{
+      padding: 22px;
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+    }
+    .side h2{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:-0.02em;
+    }
+    .side p{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.45;
+    }
+    .info{
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: #fbfcff;
+      padding: 14px;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f2f4f7;
+      border: 1px solid var(--stroke);
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .footer{
+      color: var(--muted2);
+      font-size: 12px;
+      text-align:center;
+      margin-top: 14px;
+    }
   </style>
 </head>
+
 <body>
-  <h2>Escolha de Tutoria</h2>
-
-  <div class="card">
-    <div class="row">
-      <div>
-        <label for="turma">Turma</label>
-        <select id="turma">
-          <option value="">Selecione...</option>
-        </select>
+  <div class="wrap">
+    <!-- ESQUERDA: formulário -->
+    <section class="panel">
+      <div class="hero">
+        <div class="brand">
+          <div class="logo">
+            <!-- ✅ Troque pelo arquivo real da sua escola -->
+            <!-- Se hospedar junto do HTML: coloque logo-escola.png na mesma pasta -->
+            <img src="./logo-escola.png" alt="Logo da escola" />
+          </div>
+          <div class="title">
+            <h1>Escolha de Tutoria</h1>
+            <p>Selecione sua turma, seu nome e indique suas 5 preferências de tutor. Apenas 1 envio por aluno.</p>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label for="aluno">Aluno</label>
-        <select id="aluno" disabled>
-          <option value="">Selecione a turma primeiro...</option>
-        </select>
+      <div class="steps">
+        <div class="chip"><b>1</b> Turma</div>
+        <div class="chip"><b>2</b> Nome</div>
+        <div class="chip"><b>3</b> Preferências</div>
+        <div class="chip"><b>4</b> Justificativa</div>
       </div>
 
-      <div>
-        <label for="op1">1ª opção de tutor</label>
-        <select id="op1" disabled></select>
-      </div>
+      <div class="form">
+        <div class="grid">
+          <div>
+            <label for="turma">Turma</label>
+            <select id="turma">
+              <option value="">Carregando...</option>
+            </select>
+          </div>
 
-      <div>
-        <label for="just1">Justificativa da 1ª escolha</label>
-        <textarea id="just1" placeholder="Explique por que escolheu esse tutor (mínimo 20 caracteres)..." disabled></textarea>
-        <div class="hint">Mínimo: 20 caracteres.</div>
-      </div>
+          <div>
+            <label for="aluno">Aluno</label>
+            <select id="aluno" disabled>
+              <option value="">Selecione a turma primeiro...</option>
+            </select>
+          </div>
 
-      <div>
-        <label for="op2">2ª opção</label>
-        <select id="op2" disabled></select>
-      </div>
+          <div class="full">
+            <label for="op1">1ª opção de tutor</label>
+            <select id="op1" disabled></select>
+          </div>
 
-      <div>
-        <label for="op3">3ª opção</label>
-        <select id="op3" disabled></select>
-      </div>
+          <div class="full">
+            <label for="just1">Justificativa da 1ª escolha</label>
+            <textarea id="just1" disabled placeholder="Explique o motivo da sua 1ª escolha (mín. 20 caracteres)..."></textarea>
+            <div class="hint">Mínimo: <span class="kbd">20</span> caracteres. O campo libera após selecionar a 1ª opção.</div>
+          </div>
 
-      <div>
-        <label for="op4">4ª opção</label>
-        <select id="op4" disabled></select>
-      </div>
+          <div>
+            <label for="op2">2ª opção</label>
+            <select id="op2" disabled></select>
+          </div>
 
-      <div>
-        <label for="op5">5ª opção</label>
-        <select id="op5" disabled></select>
-      </div>
+          <div>
+            <label for="op3">3ª opção</label>
+            <select id="op3" disabled></select>
+          </div>
 
-      <button id="enviar" disabled>Enviar</button>
-      <div id="msg"></div>
-    </div>
+          <div>
+            <label for="op4">4ª opção</label>
+            <select id="op4" disabled></select>
+          </div>
+
+          <div>
+            <label for="op5">5ª opção</label>
+            <select id="op5" disabled></select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="enviar" disabled>Enviar inscrição</button>
+        </div>
+
+        <div id="msg" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- DIREITA: instruções -->
+    <aside class="panel">
+      <div class="side">
+        <h2>Regras</h2>
+        <div class="info">
+          <p>• É permitido <b>apenas 1 envio por aluno</b>.</p>
+          <p>• As opções de tutor <b>não podem repetir</b>.</p>
+          <p>• A justificativa da 1ª escolha precisa ter pelo menos <span class="kbd">20</span> caracteres.</p>
+        </div>
+
+        <h2>Dica</h2>
+        <div class="info">
+          <p>Escolha com calma. Essas informações ajudam a organizar a tutoria com mais justiça e eficiência.</p>
+        </div>
+
+        <div class="footer">© Escola • Formulário de Tutoria</div>
+      </div>
+    </aside>
   </div>
 
 <script>
-  // Cole aqui a URL do seu Web App do Apps Script
-  const API_BASE = "AKfycbzKV_zRsE7o2gDmesFQFbTpLLeEbhDW8qXOjvfevFExqqtvFAO-4avIbWPkzvn1Cjqf8A";
+  // ✅ Cole aqui a URL do seu Web App do Apps Script (Deploy → Web app)
+  const API_BASE = "https://script.google.com/macros/s/AKfycbzKV_zRsE7o2gDmesFQFbTpLLeEbhDW8qXOjvfevFExqqtvFAO-4avIbWPkzvn1Cjqf8A/exec";
 
   const elTurma = document.getElementById("turma");
   const elAluno = document.getElementById("aluno");
@@ -88,29 +421,29 @@
   const elEnviar = document.getElementById("enviar");
   const elMsg = document.getElementById("msg");
 
-  function setMsg(text, ok=true) {
-    elMsg.className = "msg " + (ok ? "ok" : "err");
+  function setMsg(text, ok=true){
+    elMsg.classList.remove("ok","err");
+    elMsg.classList.add(ok ? "ok" : "err");
     elMsg.textContent = text;
   }
-
-  function clearMsg() {
-    elMsg.className = "";
+  function clearMsg(){
+    elMsg.classList.remove("ok","err");
     elMsg.textContent = "";
   }
 
-  async function fetchJSON(url, opts) {
+  async function fetchJSON(url, opts){
     const res = await fetch(url, opts);
     return await res.json();
   }
 
-  function setOptions(selectEl, list, {placeholder="Selecione..."}={}) {
+  function setOptions(selectEl, list, placeholder="Selecione..."){
     selectEl.innerHTML = "";
     const ph = document.createElement("option");
     ph.value = "";
     ph.textContent = placeholder;
     selectEl.appendChild(ph);
 
-    for (const item of list) {
+    for(const item of list){
       const opt = document.createElement("option");
       opt.value = item.value;
       opt.textContent = item.label;
@@ -118,51 +451,32 @@
     }
   }
 
-  function enableTutorFields(enabled) {
-    for (const el of [elOp1, elOp2, elOp3, elOp4, elOp5, elJust1]) {
+  function enableTutorFields(enabled){
+    for(const el of [elOp1, elOp2, elOp3, elOp4, elOp5]){
       el.disabled = !enabled;
     }
+    // justificativa só libera após op1
+    elJust1.disabled = true;
     elEnviar.disabled = !enabled;
   }
 
-  function getTutorChoices() {
-    const selected = [elOp1.value, elOp2.value, elOp3.value, elOp4.value, elOp5.value].filter(Boolean);
-    return selected;
+  function getTutorChoices(){
+    return [elOp1.value, elOp2.value, elOp3.value, elOp4.value, elOp5.value].filter(Boolean);
   }
 
-  function refreshTutorDropdowns(tutores) {
-    // Remove opções já selecionadas em cada dropdown (sem repetir tutor)
-    const selected = getTutorChoices();
+  function refreshTutorDropdowns(tutores){
+    const picks = { op1: elOp1.value, op2: elOp2.value, op3: elOp3.value, op4: elOp4.value, op5: elOp5.value };
 
-    function buildList(exclude) {
-      return tutores
-        .filter(t => !exclude.includes(t))
-        .map(t => ({ value: t, label: t }));
-    }
+    const excludeFor = (keepKey) =>
+      Object.entries(picks).filter(([k,v]) => k !== keepKey && v).map(([k,v]) => v);
 
-    // Para cada select, exclui as escolhas dos outros
-    const picks = {
-      op1: elOp1.value,
-      op2: elOp2.value,
-      op3: elOp3.value,
-      op4: elOp4.value,
-      op5: elOp5.value
-    };
+    const buildList = (exclude) => tutores.filter(t => !exclude.includes(t)).map(t => ({value:t, label:t}));
 
-    const all = tutores.slice();
-
-    const excludeFor = (keepKey) => {
-      return Object.entries(picks)
-        .filter(([k, v]) => k !== keepKey && v)
-        .map(([k, v]) => v);
-    };
-
-    // Re-render mantendo seleção atual se ainda válida
     const reRender = (el, keepKey) => {
       const old = el.value;
       const list = buildList(excludeFor(keepKey));
-      setOptions(el, list, { placeholder: "Selecione..." });
-      if (old && list.some(x => x.value === old)) el.value = old;
+      setOptions(el, list, "Selecione...");
+      if(old && list.some(x => x.value === old)) el.value = old;
     };
 
     reRender(elOp1, "op1");
@@ -174,39 +488,68 @@
 
   let tutoresCache = [];
 
-  async function init() {
+  async function init(){
     clearMsg();
-    try {
+    try{
+      if(!API_BASE || API_BASE.includes("COLE_AQUI")){
+        setMsg("Configure a URL da API (API_BASE) no código antes de publicar.", false);
+        elTurma.innerHTML = `<option value="">Configurar API_BASE...</option>`;
+        return;
+      }
+
       const turmas = await fetchJSON(`${API_BASE}?action=turmas`);
-      setOptions(elTurma, turmas.map(t => ({ value: t.TurmaID, label: t.TurmaNome })));
+      setOptions(
+        elTurma,
+        turmas.map(t => ({ value: t.TurmaID, label: t.TurmaNome })),
+        "Selecione a turma..."
+      );
 
       tutoresCache = await fetchJSON(`${API_BASE}?action=tutores`);
-      // Inicializa selects de tutores
-      setOptions(elOp1, tutoresCache.map(t => ({value:t, label:t})));
-      setOptions(elOp2, tutoresCache.map(t => ({value:t, label:t})));
-      setOptions(elOp3, tutoresCache.map(t => ({value:t, label:t})));
-      setOptions(elOp4, tutoresCache.map(t => ({value:t, label:t})));
-      setOptions(elOp5, tutoresCache.map(t => ({value:t, label:t})));
+      const tutorList = tutoresCache.map(t => ({value:t, label:t}));
 
-    } catch (e) {
-      setMsg("Falha ao carregar dados. Verifique a URL da API e a publicação do Apps Script.", false);
+      setOptions(elOp1, tutorList, "Selecione...");
+      setOptions(elOp2, tutorList, "Selecione...");
+      setOptions(elOp3, tutorList, "Selecione...");
+      setOptions(elOp4, tutorList, "Selecione...");
+      setOptions(elOp5, tutorList, "Selecione...");
+
+      // estado inicial
+      elAluno.disabled = true;
+      enableTutorFields(false);
+
+    }catch(e){
+      setMsg("Falha ao carregar dados. Verifique a publicação do Apps Script e a URL.", false);
+      elTurma.innerHTML = `<option value="">Erro ao carregar</option>`;
     }
   }
 
   elTurma.addEventListener("change", async () => {
     clearMsg();
     const turmaId = elTurma.value;
+
     elAluno.disabled = true;
     elAluno.innerHTML = `<option value="">Carregando alunos...</option>`;
     enableTutorFields(false);
 
-    if (!turmaId) {
+    // reset seleções
+    elOp1.value = ""; elOp2.value = ""; elOp3.value = ""; elOp4.value = ""; elOp5.value = "";
+    elJust1.value = "";
+    elJust1.disabled = true;
+
+    if(!turmaId){
       elAluno.innerHTML = `<option value="">Selecione a turma primeiro...</option>`;
       return;
     }
 
     const alunos = await fetchJSON(`${API_BASE}?action=alunos&turmaId=${encodeURIComponent(turmaId)}`);
-    setOptions(elAluno, alunos.map(a => ({ value: a.AlunoID, label: a.Nome })));
+
+    if (!alunos.length) {
+    elAluno.innerHTML = `<option value="">Nenhum aluno disponível (todos já responderam)</option>`;
+    elAluno.disabled = true;
+    return;
+    }
+
+    setOptions(elAluno, alunos.map(a => ({ value: a.AlunoID, label: a.Nome })), "Selecione seu nome...");
     elAluno.disabled = false;
   });
 
@@ -216,10 +559,9 @@
     enableTutorFields(ok);
   });
 
-  for (const s of [elOp1, elOp2, elOp3, elOp4, elOp5]) {
+  for(const s of [elOp1, elOp2, elOp3, elOp4, elOp5]){
     s.addEventListener("change", () => {
       refreshTutorDropdowns(tutoresCache);
-      // Só libera justificativa quando tiver op1
       elJust1.disabled = !elOp1.value;
     });
   }
@@ -227,16 +569,11 @@
   elEnviar.addEventListener("click", async () => {
     clearMsg();
 
-    const turmaId = elTurma.value;
-    const turmaNome = elTurma.options[elTurma.selectedIndex]?.textContent || "";
-    const alunoId = elAluno.value;
-    const alunoNome = elAluno.options[elAluno.selectedIndex]?.textContent || "";
-
     const payload = {
-      turmaId,
-      turmaNome,
-      alunoId,
-      alunoNome,
+      turmaId: elTurma.value,
+      turmaNome: elTurma.options[elTurma.selectedIndex]?.textContent || "",
+      alunoId: elAluno.value,
+      alunoNome: elAluno.options[elAluno.selectedIndex]?.textContent || "",
       opcao1: elOp1.value,
       opcao2: elOp2.value,
       opcao3: elOp3.value,
@@ -245,29 +582,37 @@
       justificativa1: elJust1.value.trim()
     };
 
-    if (!payload.opcao1) return setMsg("Selecione a 1ª opção de tutor.", false);
-    if (!payload.justificativa1 || payload.justificativa1.length < 20) return setMsg("Justificativa da 1ª escolha deve ter pelo menos 20 caracteres.", false);
+    if(!payload.turmaId) return setMsg("Selecione a turma.", false);
+    if(!payload.alunoId) return setMsg("Selecione seu nome.", false);
+    if(!payload.opcao1) return setMsg("Selecione a 1ª opção de tutor.", false);
+    if(!payload.justificativa1 || payload.justificativa1.length < 20){
+      return setMsg("A justificativa da 1ª escolha deve ter pelo menos 20 caracteres.", false);
+    }
 
-    try {
+    try{
+      elEnviar.disabled = true;
+
       const res = await fetchJSON(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
+      if(!res.ok){
+        elEnviar.disabled = false;
         return setMsg(res.error || "Erro ao enviar.", false);
       }
 
-      setMsg(res.message || "Enviado!");
-      // trava tudo após envio
-      elEnviar.disabled = true;
-      enableTutorFields(false);
+      setMsg(res.message || "Inscrição enviada com sucesso!", true);
+
+      // trava após envio (1 envio por aluno)
       elTurma.disabled = true;
       elAluno.disabled = true;
+      enableTutorFields(false);
 
-    } catch (e) {
-      setMsg("Falha ao enviar. Verifique internet e se o Apps Script está publicado como 'Anyone'.", false);
+    }catch(e){
+      elEnviar.disabled = false;
+      setMsg("Falha ao enviar. Verifique sua internet e a publicação do Apps Script.", false);
     }
   });
 
