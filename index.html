@@ -12,7 +12,6 @@
 
   <style>
     :root{
-      /* Light theme */
       --bg1:#f6f8fc;
       --bg2:#eef2ff;
       --card:#ffffff;
@@ -312,8 +311,6 @@
       <div class="hero">
         <div class="brand">
           <div class="logo">
-            <!-- ✅ Troque pelo arquivo real da sua escola -->
-            <!-- Se hospedar junto do HTML: coloque logo-escola.png na mesma pasta -->
             <img src="./logo-escola.png" alt="Logo da escola" />
           </div>
           <div class="title">
@@ -330,60 +327,60 @@
         <div class="chip"><b>4</b> Justificativa</div>
       </div>
 
-      <div class="form">
+      <form class="form" id="formTutoria" novalidate>
         <div class="grid">
           <div>
             <label for="turma">Turma</label>
-            <select id="turma">
+            <select id="turma" required>
               <option value="">Carregando...</option>
             </select>
           </div>
 
           <div>
             <label for="aluno">Aluno</label>
-            <select id="aluno" disabled>
+            <select id="aluno" required disabled>
               <option value="">Selecione a turma primeiro...</option>
             </select>
           </div>
 
           <div class="full">
             <label for="op1">1ª opção de tutor</label>
-            <select id="op1" disabled></select>
+            <select id="op1" required disabled></select>
           </div>
 
           <div class="full">
             <label for="just1">Justificativa da 1ª escolha</label>
-            <textarea id="just1" disabled placeholder="Explique o motivo da sua 1ª escolha (mín. 20 caracteres)..."></textarea>
-            <div class="hint">Mínimo: <span class="kbd">20</span> caracteres. O campo libera após selecionar a 1ª opção.</div>
+            <textarea id="just1" required minlength="20" disabled placeholder="Explique o motivo da sua 1ª escolha (mín. 20 caracteres)..."></textarea>
+            <div class="hint">Mínimo: <span class="kbd">20</span> caracteres.</div>
           </div>
 
           <div>
             <label for="op2">2ª opção</label>
-            <select id="op2" disabled></select>
+            <select id="op2" required disabled></select>
           </div>
 
           <div>
             <label for="op3">3ª opção</label>
-            <select id="op3" disabled></select>
+            <select id="op3" required disabled></select>
           </div>
 
           <div>
             <label for="op4">4ª opção</label>
-            <select id="op4" disabled></select>
+            <select id="op4" required disabled></select>
           </div>
 
           <div>
             <label for="op5">5ª opção</label>
-            <select id="op5" disabled></select>
+            <select id="op5" required disabled></select>
           </div>
         </div>
 
         <div class="actions">
-          <button id="enviar" disabled>Enviar inscrição</button>
+          <button id="enviar" type="submit" disabled>Enviar inscrição</button>
         </div>
 
         <div id="msg" class="msg"></div>
-      </div>
+      </form>
     </section>
 
     <!-- DIREITA: instruções -->
@@ -407,9 +404,9 @@
   </div>
 
 <script>
-  // ✅ Cole aqui a URL do seu Web App do Apps Script (Deploy → Web app)
   const API_BASE = "https://script.google.com/a/macros/prof.educacao.sp.gov.br/s/AKfycbxYuc_UbOHCREbR_C_aqrPVa_elN4cH96c29SVuNAGUe1k6paRDyv6mTHhWsIyyDbJqqw/exec";
 
+  const elForm = document.getElementById("formTutoria");
   const elTurma = document.getElementById("turma");
   const elAluno = document.getElementById("aluno");
   const elOp1 = document.getElementById("op1");
@@ -455,13 +452,8 @@
     for(const el of [elOp1, elOp2, elOp3, elOp4, elOp5]){
       el.disabled = !enabled;
     }
-    // justificativa só libera após op1
-    elJust1.disabled = true;
+    elJust1.disabled = !enabled;
     elEnviar.disabled = !enabled;
-  }
-
-  function getTutorChoices(){
-    return [elOp1.value, elOp2.value, elOp3.value, elOp4.value, elOp5.value].filter(Boolean);
   }
 
   function refreshTutorDropdowns(tutores){
@@ -484,6 +476,11 @@
     reRender(elOp3, "op3");
     reRender(elOp4, "op4");
     reRender(elOp5, "op5");
+  }
+
+  function hasDuplicateTutor(){
+    const vals = [elOp1.value, elOp2.value, elOp3.value, elOp4.value, elOp5.value].filter(Boolean);
+    return new Set(vals).size !== vals.length;
   }
 
   let tutoresCache = [];
@@ -513,7 +510,6 @@
       setOptions(elOp4, tutorList, "Selecione...");
       setOptions(elOp5, tutorList, "Selecione...");
 
-      // estado inicial
       elAluno.disabled = true;
       enableTutorFields(false);
 
@@ -531,10 +527,8 @@
     elAluno.innerHTML = `<option value="">Carregando alunos...</option>`;
     enableTutorFields(false);
 
-    // reset seleções
     elOp1.value = ""; elOp2.value = ""; elOp3.value = ""; elOp4.value = ""; elOp5.value = "";
     elJust1.value = "";
-    elJust1.disabled = true;
 
     if(!turmaId){
       elAluno.innerHTML = `<option value="">Selecione a turma primeiro...</option>`;
@@ -544,9 +538,9 @@
     const alunos = await fetchJSON(`${API_BASE}?action=alunos&turmaId=${encodeURIComponent(turmaId)}`);
 
     if (!alunos.length) {
-    elAluno.innerHTML = `<option value="">Nenhum aluno disponível (todos já responderam)</option>`;
-    elAluno.disabled = true;
-    return;
+      elAluno.innerHTML = `<option value="">Nenhum aluno disponível (todos já responderam)</option>`;
+      elAluno.disabled = true;
+      return;
     }
 
     setOptions(elAluno, alunos.map(a => ({ value: a.AlunoID, label: a.Nome })), "Selecione seu nome...");
@@ -557,17 +551,35 @@
     clearMsg();
     const ok = !!elAluno.value;
     enableTutorFields(ok);
+
+    elOp1.value = ""; elOp2.value = ""; elOp3.value = ""; elOp4.value = ""; elOp5.value = "";
+    elJust1.value = "";
+
+    refreshTutorDropdowns(tutoresCache);
   });
 
   for(const s of [elOp1, elOp2, elOp3, elOp4, elOp5]){
     s.addEventListener("change", () => {
       refreshTutorDropdowns(tutoresCache);
-      elJust1.disabled = !elOp1.value;
+      if(hasDuplicateTutor()){
+        setMsg("As opções de tutor não podem repetir.", false);
+      }else{
+        clearMsg();
+      }
     });
   }
 
-  elEnviar.addEventListener("click", async () => {
+  elForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
     clearMsg();
+
+    if(!elForm.reportValidity()){
+      return;
+    }
+
+    if(hasDuplicateTutor()){
+      return setMsg("As opções de tutor não podem repetir.", false);
+    }
 
     const payload = {
       turmaId: elTurma.value,
@@ -581,13 +593,6 @@
       opcao5: elOp5.value,
       justificativa1: elJust1.value.trim()
     };
-
-    if(!payload.turmaId) return setMsg("Selecione a turma.", false);
-    if(!payload.alunoId) return setMsg("Selecione seu nome.", false);
-    if(!payload.opcao1) return setMsg("Selecione a 1ª opção de tutor.", false);
-    if(!payload.justificativa1 || payload.justificativa1.length < 20){
-      return setMsg("A justificativa da 1ª escolha deve ter pelo menos 20 caracteres.", false);
-    }
 
     try{
       elEnviar.disabled = true;
@@ -605,7 +610,6 @@
 
       setMsg(res.message || "Inscrição enviada com sucesso!", true);
 
-      // trava após envio (1 envio por aluno)
       elTurma.disabled = true;
       elAluno.disabled = true;
       enableTutorFields(false);
