@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Escolha de Tutoria</title>
 
-  <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -306,7 +305,6 @@
 
 <body>
   <div class="wrap">
-    <!-- ESQUERDA: formulário -->
     <section class="panel">
       <div class="hero">
         <div class="brand">
@@ -383,7 +381,6 @@
       </form>
     </section>
 
-    <!-- DIREITA: instruções -->
     <aside class="panel">
       <div class="side">
         <h2>Regras</h2>
@@ -484,6 +481,20 @@
   }
 
   let tutoresCache = [];
+
+  async function resetAfterSuccess() {
+    elForm.reset();
+    elTurma.value = "";
+    elAluno.innerHTML = `<option value="">Selecione a turma primeiro...</option>`;
+    elAluno.value = "";
+    elOp1.value = ""; elOp2.value = ""; elOp3.value = ""; elOp4.value = ""; elOp5.value = "";
+    elJust1.value = "";
+    elTurma.disabled = false;
+    elAluno.disabled = true;
+    enableTutorFields(false);
+    refreshTutorDropdowns(tutoresCache);
+    elTurma.focus();
+  }
 
   async function init(){
     clearMsg();
@@ -610,9 +621,9 @@
 
       setMsg(res.message || "Inscrição enviada com sucesso!", true);
 
-      elTurma.disabled = true;
-      elAluno.disabled = true;
-      enableTutorFields(false);
+      setTimeout(() => {
+        resetAfterSuccess();
+      }, 1200);
 
     }catch(e){
       elEnviar.disabled = false;
